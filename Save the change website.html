@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Save the Change</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#F7F8F2; --surface:#FFFFFF; --surface-2:#EFF2E7; --border:#DCE2D0;
+    --text:#232A1F; --text-muted:#63705A; --accent:#6E8358; --accent-strong:#4E5F3E;
+    --accent-soft:#E3E9D8; --positive:#4C7A52; --negative:#B5583F; --focus:#6E8358;
+    --shadow: 0 1px 2px rgba(30,40,20,.06), 0 8px 24px -12px rgba(30,40,20,.18);
+  }
+  [data-app-theme="dark"]{
+    color-scheme: dark;
+    --bg:#12140E; --surface:#1B1E15; --surface-2:#20241A; --border:#323A28;
+    --text:#E9ECE0; --text-muted:#9FAB90; --accent:#9CB386; --accent-strong:#BCCEA7;
+    --accent-soft:#242C1D; --positive:#8FB584; --negative:#D9876B; --focus:#9CB386;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 28px -14px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;background:var(--bg);color:var(--text);}
+  img{max-width:100%;}
+  [hidden]{display:none!important;}
+  #app{
+    min-height:100%;
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Work Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+    padding:24px 16px calc(48px + env(safe-area-inset-bottom,0px));
+    transition:background .25s ease,color .25s ease;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-0.01em;margin:0;text-wrap:balance;}
+  .num{font-family:"IBM Plex Mono","SFMono-Regular",monospace;font-variant-numeric:tabular-nums;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand h1{font-size:26px;}
+  .brand .tag{font-size:12px;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;}
+  .theme-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--surface);border:1px solid var(--border);border-radius:999px;
+    padding:7px 12px;font-size:12px;color:var(--text-muted);cursor:pointer;
+    box-shadow:var(--shadow);
+  }
+  .theme-btn:hover{color:var(--text);}
+  .theme-btn svg{width:14px;height:14px;}
+
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    box-shadow:var(--shadow);
+  }
+  .btn{
+    appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);
+    border-radius:10px;padding:9px 14px;font-size:14px;font-weight:500;cursor:pointer;
+    transition:background .15s,border-color .15s;
+  }
+  .btn:hover{border-color:var(--accent);}
+  .btn:focus-visible, input:focus-visible, .theme-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#F8FAF4;}
+  .btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong);}
+  .btn-ghost{background:transparent;border-color:transparent;color:var(--text-muted);padding:6px 8px;}
+  .btn-ghost:hover{color:var(--negative);}
+  .btn-sm{padding:6px 10px;font-size:12.5px;border-radius:8px;}
+  input[type="text"],input[type="number"],input[type="month"]{
+    font-family:inherit;font-size:14px;color:var(--text);background:var(--surface-2);
+    border:1px solid var(--border);border-radius:9px;padding:9px 11px;width:100%;
+  }
+  input::placeholder{color:var(--text-muted);}
+
+  /* home */
+  .empty{
+    text-align:center;padding:56px 20px;color:var(--text-muted);
+  }
+  .empty h2{color:var(--text);font-size:19px;margin-bottom:8px;}
+  .wallet-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+  .wallet-card{padding:18px 20px;cursor:pointer;display:flex;flex-direction:column;gap:10px;}
+  .wallet-card:hover{border-color:var(--accent);}
+  .wallet-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .wallet-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .wallet-name{font-size:17px;}
+  .badge{
+    font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-strong);
+    background:var(--accent-soft);border-radius:999px;padding:3px 8px;font-weight:600;
+    font-family:"Work Sans",sans-serif;
+  }
+  .wallet-month{font-size:12.5px;color:var(--text-muted);}
+  .wallet-total{font-size:22px;font-weight:600;}
+  .wallet-total.neg{color:var(--negative);}
+  .wallet-total.pos{color:var(--positive);}
+  .wallet-sub{font-size:12.5px;color:var(--text-muted);}
+  .new-wallet-card{padding:16px 20px;}
+  .new-wallet-form{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:150px;}
+  .field label{font-size:12px;color:var(--text-muted);}
+  .new-wallet-toggle{width:100%;text-align:left;padding:14px 18px;display:flex;align-items:center;gap:10px;color:var(--text-muted);background:none;border:none;cursor:pointer;border-radius:12px;}
+  .new-wallet-toggle:hover{color:var(--accent-strong);border-color:var(--accent);}
+  .plus{font-size:17px;line-height:1;color:var(--accent);}
+
+  /* detail */
+  .back-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .back-btn{display:flex;align-items:center;gap:6px;color:var(--text-muted);background:none;border:none;font-size:13.5px;cursor:pointer;padding:4px 0;}
+  .back-btn:hover{color:var(--text);}
+  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px;flex-wrap:wrap;}
+  .detail-title h2{font-size:24px;}
+  .detail-title .wallet-month{margin-top:4px;}
+  .icon-del{color:var(--text-muted);}
+
+  .summary{
+    position:sticky;top:env(safe-area-inset-top,0px);z-index:5;
+    display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between;align-items:center;
+    padding:16px 20px;margin:18px 0 22px;
+  }
+  .summary-item{display:flex;flex-direction:column;gap:2px;}
+  .summary-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);}
+  .summary-value{font-size:21px;font-weight:600;}
+
+  .day-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+  .day-card{padding:14px 14px 12px;display:flex;flex-direction:column;gap:8px;}
+  .day-card.future{opacity:.55;}
+  .day-card.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow);}
+  .day-top{display:flex;justify-content:space-between;align-items:baseline;}
+  .day-date{font-size:14px;font-weight:600;}
+  .day-weekday{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;}
+  .day-upcoming{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+  .day-allowance{font-size:11px;color:var(--text-muted);}
+  .expense-list{display:flex;flex-direction:column;gap:5px;max-height:110px;overflow-y:auto;}
+  .expense-row{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12.5px;background:var(--surface-2);border-radius:7px;padding:5px 7px;}
+  .expense-amt{color:var(--text-muted);flex-shrink:0;}
+  .expense-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:2px;flex-shrink:0;}
+  .expense-del:hover{color:var(--negative);}
+  .add-expense{display:flex;gap:5px;}
+  .add-expense input[type="number"]{flex:1;padding:6px 8px;font-size:12.5px;}
+  .add-expense button{padding:6px 9px;font-size:12.5px;}
+  .day-saved-row{display:flex;justify-content:space-between;align-items:baseline;padding-top:6px;border-top:1px dashed var(--border);margin-top:2px;}
+  .day-saved-label{font-size:11px;color:var(--text-muted);}
+  .day-saved-value{font-size:15px;font-weight:600;}
+  .day-saved-value.pos{color:var(--positive);}
+  .day-saved-value.neg{color:var(--negative);}
+  .save-note{font-size:11px;color:var(--text-muted);text-align:center;margin-top:24px;}
+
+  @media (max-width:480px){
+    .summary{position:static;}
+    .wallet-total{font-size:20px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DAILY_ALLOWANCE = 600;
+  var STORAGE_KEY = "save-the-change:data";
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  function pad(n){ return n<10 ? "0"+n : ""+n; }
+  function todayKey(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function dateKey(y,m,day){ return y+"-"+pad(m)+"-"+pad(day); }
+  function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+  var WEEKDAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function peso(n){
+    var neg = n < 0;
+    var v = Math.abs(n).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});
+    return (neg?"−":"") + "₱" + v;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  // ---------- default / seed state ----------
+  function defaultState(){
+    var now = new Date();
+    var todayDay = now.getDate();
+    var year = now.getFullYear();
+    var month = now.getMonth() + 1;
+    var w = { id: "demo-wallet", name: "Example Wallet", example: true, year: year, month: month, days: {} };
+    var sample = [
+      {offset:-1, amounts:[26,75]},
+      {offset:-2, amounts:[65]},
+      {offset:-3, amounts:[50,40,20]},
+      {offset:-4, amounts:[]},
+      {offset:-5, amounts:[90]}
+    ];
+    sample.forEach(function(s){
+      var d = todayDay + s.offset;
+      if (d < 1) return;
+      var key = dateKey(year, month, d);
+      w.days[key] = { expenses: s.amounts.map(function(a){ return {id:uid(), amount:a}; }) };
+    });
+    return { wallets: [w], activeWalletId: null, themeMode: "auto", view: "home", creatingWallet: false };
+  }
+
+  // ---------- persistence (browser localStorage — this device only) ----------
+  var storageOK = true;
+  function loadState(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { storageOK = false; }
+    return defaultState();
+  }
+  var saveTimer = null;
+  function scheduleSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+      catch (e) { storageOK = false; render(); }
+    }, 250);
+  }
+
+  var state = loadState();
+
+  // ---------- theme (time-of-day, with manual override) ----------
+  function autoTheme(){
+    var h = new Date().getHours();
+    return (h >= 18 || h < 6) ? "dark" : "light";
+  }
+  function applyTheme(){
+    var mode = state.themeMode === "auto" ? autoTheme() : state.themeMode;
+    document.documentElement.setAttribute("data-app-theme", mode);
+  }
+  function cycleTheme(){
+    var order = ["auto","light","dark"];
+    var i = order.indexOf(state.themeMode);
+    state.themeMode = order[(i+1) % order.length];
+    applyTheme();
+    render();
+    scheduleSave();
+  }
+  applyTheme();
+  setInterval(function(){ if (state.themeMode === "auto") applyTheme(); }, 60000);
+
+  // ---------- derived helpers ----------
+  function daySpent(wallet, key){
+    var d = wallet.days[key];
+    if (!d) return 0;
+    return d.expenses.reduce(function(sum,e){ return sum + e.amount; }, 0);
+  }
+  function daySaved(wallet, key){ return DAILY_ALLOWANCE - daySpent(wallet, key); }
+
+  function walletTotals(wallet){
+    var today = todayKey();
+    var n = daysInMonth(wallet.year, wallet.month);
+    var total = 0, trackedDays = 0, spentTotal = 0;
+    for (var d=1; d<=n; d++){
+      var key = dateKey(wallet.year, wallet.month, d);
+      if (key > today) continue;
+      total += daySaved(wallet, key);
+      spentTotal += daySpent(wallet, key);
+      trackedDays++;
+    }
+    return { total: total, trackedDays: trackedDays, spentTotal: spentTotal };
+  }
+
+  // ---------- mutations ----------
+  function addWallet(name, monthValue){
+    var parts = monthValue.split("-");
+    var w = { id: uid(), name: name, year: parseInt(parts[0],10), month: parseInt(parts[1],10), days: {} };
+    state.wallets.push(w);
+    state.activeWalletId = w.id;
+    state.view = "detail";
+    render(); scheduleSave();
+  }
+  function deleteWallet(id){
+    state.wallets = state.wallets.filter(function(w){ return w.id !== id; });
+    if (state.activeWalletId === id) { state.activeWalletId = null; state.view = "home"; }
+    render(); scheduleSave();
+  }
+  function openWallet(id){
+    state.activeWalletId = id; state.view = "detail";
+    render();
+  }
+  function goHome(){
+    state.activeWalletId = null; state.view = "home";
+    render();
+  }
+  function addExpense(wallet, key, amount){
+    if (!wallet.days[key]) wallet.days[key] = { expenses: [] };
+    wallet.days[key].expenses.push({ id: uid(), amount: amount });
+    render(); scheduleSave();
+  }
+  function deleteExpense(wallet, key, expId){
+    if (!wallet.days[key]) return;
+    wallet.days[key].expenses = wallet.days[key].expenses.filter(function(e){ return e.id !== expId; });
+    render(); scheduleSave();
+  }
+
+  // ---------- rendering ----------
+  var app = document.getElementById("app");
+
+  function themeIcon(mode){
+    if (mode === "dark") return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+    if (mode === "light") return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18z" fill="currentColor" stroke="none"/></svg>';
+  }
+
+  function renderTopbar(){
+    var mode = state.themeMode;
+    var label = mode === "auto" ? "Auto (" + autoTheme() + ")" : (mode.charAt(0).toUpperCase()+mode.slice(1));
+    return (
+      '<div class="topbar">' +
+        '<div class="brand"><h1>Save the Change</h1><span class="tag">daily allowance tracker</span></div>' +
+        '<button class="theme-btn" id="theme-toggle" type="button" title="Cycle theme">' + themeIcon(mode) + '<span>' + label + '</span></button>' +
+      '</div>'
+    );
+  }
+
+  function renderHome(){
+    var html = '<div class="wrap">' + renderTopbar();
+
+    if (state.wallets.length === 0){
+      html += '<div class="card empty"><h2>No wallets yet</h2><p>Create one below to start tracking your daily allowance.</p></div>';
+    } else {
+      html += '<div class="wallet-grid">';
+      state.wallets.forEach(function(w){
+        var t = walletTotals(w);
+        var cls = t.total > 0 ? "pos" : (t.total < 0 ? "neg" : "");
+        html += (
+          '<div class="card wallet-card" data-open="' + w.id + '">' +
+            '<div class="wallet-card-top">' +
+              '<div>' +
+                '<div class="wallet-name-row"><span class="wallet-name">' + escapeHtml(w.name) + '</span>' + (w.example ? '<span class="badge">Example</span>' : '') + '</div>' +
+                '<div class="wallet-month">' + MONTHS[w.month-1] + ' ' + w.year + '</div>' +
+              '</div>' +
+              '<button class="btn-ghost icon-del" data-del="' + w.id + '" title="Delete wallet" type="button">✕</button>' +
+            '</div>' +
+            '<div>' +
+              '<div class="wallet-total num ' + cls + '">' + peso(t.total) + '</div>' +
+              '<div class="wallet-sub">saved so far · ' + t.trackedDays + ' day' + (t.trackedDays===1?'':'s') + ' tracked</div>' +
+            '</div>' +
+          '</div>'
+        );
+      });
+      html += '</div>';
+    }
+
+    html += (
+      '<div class="card new-wallet-card" style="margin-top:14px;">' +
+        (state.creatingWallet ?
+          '<form class="new-wallet-form" id="new-wallet-form">' +
+            '<div class="field"><label for="nw-name">Wallet name</label><input type="text" id="nw-name" placeholder="e.g. School Allowance" required maxlength="40"></div>' +
+            '<div class="field" style="max-width:170px;"><label for="nw-month">Month</label><input type="month" id="nw-month" value="' + defaultMonthValue() + '" required></div>' +
+            '<button class="btn btn-primary" type="submit">Create</button>' +
+            '<button class="btn" type="button" id="cancel-new-wallet">Cancel</button>' +
+          '</form>'
+        :
+          '<button class="new-wallet-toggle" id="show-new-wallet" type="button"><span class="plus">+</span> New wallet</button>'
+        ) +
+      '</div>'
+    );
+
+    html += '<div class="save-note">' + (storageOK ? 'Saved automatically in this browser.' : 'Your browser blocked local storage — changes won’t be saved after you close this tab.') + '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function defaultMonthValue(){
+    var now = new Date();
+    return now.getFullYear() + "-" + pad(now.getMonth()+1);
+  }
+
+  function renderDetail(){
+    var wallet = state.wallets.filter(function(w){ return w.id === state.activeWalletId; })[0];
+    if (!wallet){ state.view = "home"; return renderHome(); }
+    var t = walletTotals(wallet);
+    var today = todayKey();
+    var n = daysInMonth(wallet.year, wallet.month);
+
+    var html = '<div class="wrap">' + renderTopbar();
+    html += (
+      '<div class="back-row"><button class="back-btn" id="back-home" type="button">← All wallets</button></div>' +
+      '<div class="detail-head">' +
+        '<div class="detail-title"><h2>' + escapeHtml(wallet.name) + (wallet.example ? ' <span class="badge">Example</span>' : '') + '</h2>' +
+        '<div class="wallet-month">' + MONTHS[wallet.month-1] + ' ' + wallet.year + '</div></div>' +
+        '<button class="btn btn-sm" id="del-wallet" type="button">Delete wallet</button>' +
+      '</div>'
+    );
+
+    html += (
+      '<div class="card summary">' +
+        '<div class="summary-item"><span class="summary-label">Spent so far</span><span class="summary-value num">' + peso(t.spentTotal) + '</span></div>' +
+        '<div class="summary-item"><span class="summary-label">Saved so far</span><span class="summary-value num ' + (t.total>0?'day-saved-value pos':(t.total<0?'day-saved-value neg':'')) + '">' + peso(t.total) + '</span></div>' +
+        '<div class="summary-item"><span class="summary-label">Days tracked</span><span class="summary-value num">' + t.trackedDays + ' / ' + n + '</span></div>' +
+      '</div>'
+    );
+
+    html += '<div class="day-grid">';
+    for (var d=1; d<=n; d++){
+      var key = dateKey(wallet.year, wallet.month, d);
+      var dow = new Date(wallet.year, wallet.month-1, d).getDay();
+      var spent = daySpent(wallet, key);
+      var saved = DAILY_ALLOWANCE - spent;
+      var isFuture = key > today;
+      var isToday = key === today;
+      var dayData = wallet.days[key];
+      var expenses = dayData ? dayData.expenses : [];
+
+      html += '<div class="card day-card' + (isFuture?' future':'') + (isToday?' today':'') + '" data-day="' + key + '">';
+      html += (
+        '<div class="day-top">' +
+          '<div><div class="day-date">' + d + ' ' + MONTHS[wallet.month-1].slice(0,3) + '</div><div class="day-weekday">' + WEEKDAYS[dow] + (isToday?' · today':'') + '</div></div>' +
+          '<div class="day-allowance num">' + peso(DAILY_ALLOWANCE) + '</div>' +
+        '</div>'
+      );
+      if (isFuture) html += '<div class="day-upcoming">Upcoming</div>';
+
+      html += '<div class="expense-list">';
+      if (expenses.length === 0){
+        html += '<div class="expense-row" style="opacity:.55;justify-content:center;">No expenses</div>';
+      } else {
+        expenses.forEach(function(e){
+          html += (
+            '<div class="expense-row"><span class="expense-amt num">' + peso(e.amount) + '</span>' +
+            '<button class="expense-del" data-del-exp="' + e.id + '" data-day="' + key + '" title="Remove" type="button">✕</button></div>'
+          );
+        });
+      }
+      html += '</div>';
+
+      html += (
+        '<form class="add-expense" data-add-day="' + key + '">' +
+          '<input type="number" placeholder="Amount spent" min="0.01" step="0.01" required data-role="amount">' +
+          '<button class="btn btn-sm" type="submit">Add</button>' +
+        '</form>'
+      );
+
+      html += (
+        '<div class="day-saved-row"><span class="day-saved-label">Saved</span>' +
+        '<span class="day-saved-value num ' + (saved>0?'pos':(saved<0?'neg':'')) + '">' + peso(saved) + '</span></div>'
+      );
+      html += '</div>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function render(){
+    app.innerHTML = state.view === "detail" ? renderDetail() : renderHome();
+    bindEvents();
+  }
+
+  function bindEvents(){
+    var themeBtn = document.getElementById("theme-toggle");
+    if (themeBtn) themeBtn.addEventListener("click", cycleTheme);
+
+    if (state.view === "detail"){
+      var back = document.getElementById("back-home");
+      if (back) back.addEventListener("click", goHome);
+      var delW = document.getElementById("del-wallet");
+      if (delW) delW.addEventListener("click", function(){ deleteWallet(state.activeWalletId); });
+
+      var wallet = state.wallets.filter(function(w){ return w.id === state.activeWalletId; })[0];
+      if (wallet){
+        document.querySelectorAll("[data-add-day]").forEach(function(form){
+          form.addEventListener("submit", function(ev){
+            ev.preventDefault();
+            var key = form.getAttribute("data-add-day");
+            var amount = parseFloat(form.querySelector('[data-role="amount"]').value);
+            if (!amount || amount <= 0) return;
+            addExpense(wallet, key, Math.round(amount*100)/100);
+          });
+        });
+        document.querySelectorAll("[data-del-exp]").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            deleteExpense(wallet, btn.getAttribute("data-day"), btn.getAttribute("data-del-exp"));
+          });
+        });
+      }
+    } else {
+      document.querySelectorAll("[data-open]").forEach(function(el){
+        el.addEventListener("click", function(ev){
+          if (ev.target.closest("[data-del]")) return;
+          openWallet(el.getAttribute("data-open"));
+        });
+      });
+      document.querySelectorAll("[data-del]").forEach(function(btn){
+        btn.addEventListener("click", function(ev){
+          ev.stopPropagation();
+          deleteWallet(btn.getAttribute("data-del"));
+        });
+      });
+      var show = document.getElementById("show-new-wallet");
+      if (show) show.addEventListener("click", function(){ state.creatingWallet = true; render(); });
+      var cancel = document.getElementById("cancel-new-wallet");
+      if (cancel) cancel.addEventListener("click", function(){ state.creatingWallet = false; render(); });
+      var form = document.getElementById("new-wallet-form");
+      if (form) form.addEventListener("submit", function(ev){
+        ev.preventDefault();
+        var name = document.getElementById("nw-name").value.trim();
+        var month = document.getElementById("nw-month").value;
+        if (!name || !month) return;
+        state.creatingWallet = false;
+        addWallet(name, month);
+      });
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
